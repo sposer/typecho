@@ -9,7 +9,7 @@ use Typecho\Db\Query;
 use Typecho\Router;
 use Typecho\Router\ParamsDelegateInterface;
 use Utils\AutoP;
-use Utils\Markdown;
+use Utils\Parsedown;
 use Widget\Base;
 use Widget\Contents\From;
 
@@ -80,19 +80,19 @@ class Comments extends Base implements QueryInterface, RowFilterInterface, Prima
     {
         /** 构建插入结构 */
         $insertStruct = [
-            'cid'      => $rows['cid'],
-            'created'  => empty($rows['created']) ? $this->options->time : $rows['created'],
-            'author'   => Common::strBy($rows['author'] ?? null),
+            'cid' => $rows['cid'],
+            'created' => empty($rows['created']) ? $this->options->time : $rows['created'],
+            'author' => Common::strBy($rows['author'] ?? null),
             'authorId' => empty($rows['authorId']) ? 0 : $rows['authorId'],
-            'ownerId'  => empty($rows['ownerId']) ? 0 : $rows['ownerId'],
-            'mail'     => Common::strBy($rows['mail'] ?? null),
-            'url'      => Common::strBy($rows['url'] ?? null),
-            'ip'       => Common::strBy($rows['ip'] ?? null, $this->request->getIp()),
-            'agent'    => Common::strBy($rows['agent'] ?? null, $this->request->getAgent()),
-            'text'     => Common::strBy($rows['text'] ?? null),
-            'type'     => Common::strBy($rows['type'] ?? null, 'comment'),
-            'status'   => Common::strBy($rows['status'] ?? null, 'approved'),
-            'parent'   => empty($rows['parent']) ? 0 : $rows['parent'],
+            'ownerId' => empty($rows['ownerId']) ? 0 : $rows['ownerId'],
+            'mail' => Common::strBy($rows['mail'] ?? null),
+            'url' => Common::strBy($rows['url'] ?? null),
+            'ip' => Common::strBy($rows['ip'] ?? null, $this->request->getIp()),
+            'agent' => Common::strBy($rows['agent'] ?? null, $this->request->getAgent()),
+            'text' => Common::strBy($rows['text'] ?? null),
+            'type' => Common::strBy($rows['type'] ?? null, 'comment'),
+            'status' => Common::strBy($rows['status'] ?? null, 'approved'),
+            'parent' => empty($rows['parent']) ? 0 : $rows['parent'],
         ];
 
         if (!empty($rows['coid'])) {
@@ -140,9 +140,9 @@ class Comments extends Base implements QueryInterface, RowFilterInterface, Prima
         /** 构建插入结构 */
         $preUpdateStruct = [
             'author' => Common::strBy($rows['author'] ?? null),
-            'mail'   => Common::strBy($rows['mail'] ?? null),
-            'url'    => Common::strBy($rows['url'] ?? null),
-            'text'   => Common::strBy($rows['text'] ?? null),
+            'mail' => Common::strBy($rows['mail'] ?? null),
+            'url' => Common::strBy($rows['url'] ?? null),
+            'text' => Common::strBy($rows['text'] ?? null),
             'status' => Common::strBy($rows['status'] ?? null, 'approved'),
         ];
 
@@ -349,7 +349,9 @@ class Comments extends Base implements QueryInterface, RowFilterInterface, Prima
         $html = Comments::pluginHandle()->trigger($parsed)->filter('markdown', $text);
 
         if (!$parsed) {
-            $html = Markdown::convert($text);
+            $html = Parsedown::instance()
+                ->setBreaksEnabled(true)
+                ->text($text);
         }
 
         return $html;
@@ -465,10 +467,10 @@ class Comments extends Base implements QueryInterface, RowFilterInterface, Prima
     {
         if ($this->options->commentsPageBreak) {
             return Router::url(
-                'comment_page',
-                $this,
-                $this->options->index
-            ) . '#' . $this->theId;
+                    'comment_page',
+                    $this,
+                    $this->options->index
+                ) . '#' . $this->theId;
         }
 
         return $this->parentContent->permalink . '#' . $this->theId;

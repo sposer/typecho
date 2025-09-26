@@ -13,7 +13,7 @@ use Typecho\Router;
 use Typecho\Router\ParamsDelegateInterface;
 use Typecho\Widget;
 use Utils\AutoP;
-use Utils\Markdown;
+use Utils\Parsedown;
 use Widget\Base;
 use Widget\Metas\Category\Rows;
 use Widget\Upload;
@@ -132,22 +132,22 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
     {
         /** 构建插入结构 */
         $insertStruct = [
-            'title'        => !isset($rows['title']) || strlen($rows['title']) === 0
+            'title' => !isset($rows['title']) || strlen($rows['title']) === 0
                 ? null : htmlspecialchars($rows['title']),
-            'created'      => empty($rows['created']) ? $this->options->time : $rows['created'],
-            'modified'     => $this->options->time,
-            'text'         => Common::strBy($rows['text'] ?? null),
-            'order'        => empty($rows['order']) ? 0 : intval($rows['order']),
-            'authorId'     => $rows['authorId'] ?? $this->user->uid,
-            'template'     => Common::strBy($rows['template'] ?? null),
-            'type'         => Common::strBy($rows['type'] ?? null, 'post'),
-            'status'       => Common::strBy($rows['status'] ?? null, 'publish'),
-            'password'     => Common::strBy($rows['password'] ?? null),
-            'commentsNum'  => empty($rows['commentsNum']) ? 0 : $rows['commentsNum'],
+            'created' => empty($rows['created']) ? $this->options->time : $rows['created'],
+            'modified' => $this->options->time,
+            'text' => Common::strBy($rows['text'] ?? null),
+            'order' => empty($rows['order']) ? 0 : intval($rows['order']),
+            'authorId' => $rows['authorId'] ?? $this->user->uid,
+            'template' => Common::strBy($rows['template'] ?? null),
+            'type' => Common::strBy($rows['type'] ?? null, 'post'),
+            'status' => Common::strBy($rows['status'] ?? null, 'publish'),
+            'password' => Common::strBy($rows['password'] ?? null),
+            'commentsNum' => empty($rows['commentsNum']) ? 0 : $rows['commentsNum'],
             'allowComment' => !empty($rows['allowComment']) && 1 == $rows['allowComment'] ? 1 : 0,
-            'allowPing'    => !empty($rows['allowPing']) && 1 == $rows['allowPing'] ? 1 : 0,
-            'allowFeed'    => !empty($rows['allowFeed']) && 1 == $rows['allowFeed'] ? 1 : 0,
-            'parent'       => empty($rows['parent']) ? 0 : intval($rows['parent'])
+            'allowPing' => !empty($rows['allowPing']) && 1 == $rows['allowPing'] ? 1 : 0,
+            'allowFeed' => !empty($rows['allowFeed']) && 1 == $rows['allowFeed'] ? 1 : 0,
+            'parent' => empty($rows['parent']) ? 0 : intval($rows['parent'])
         ];
 
         if (!empty($rows['cid'])) {
@@ -230,18 +230,18 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
 
         /** 构建更新结构 */
         $preUpdateStruct = [
-            'title'        => !isset($rows['title']) || strlen($rows['title']) === 0
+            'title' => !isset($rows['title']) || strlen($rows['title']) === 0
                 ? null : htmlspecialchars($rows['title']),
-            'order'        => empty($rows['order']) ? 0 : intval($rows['order']),
-            'text'         => Common::strBy($rows['text'] ?? null),
-            'template'     => Common::strBy($rows['template'] ?? null),
-            'type'         => Common::strBy($rows['type'] ?? null, 'post'),
-            'status'       => Common::strBy($rows['status'] ?? null, 'publish'),
-            'password'     => Common::strBy($rows['password'] ?? null),
+            'order' => empty($rows['order']) ? 0 : intval($rows['order']),
+            'text' => Common::strBy($rows['text'] ?? null),
+            'template' => Common::strBy($rows['template'] ?? null),
+            'type' => Common::strBy($rows['type'] ?? null, 'post'),
+            'status' => Common::strBy($rows['status'] ?? null, 'publish'),
+            'password' => Common::strBy($rows['password'] ?? null),
             'allowComment' => !empty($rows['allowComment']) && 1 == $rows['allowComment'] ? 1 : 0,
-            'allowPing'    => !empty($rows['allowPing']) && 1 == $rows['allowPing'] ? 1 : 0,
-            'allowFeed'    => !empty($rows['allowFeed']) && 1 == $rows['allowFeed'] ? 1 : 0,
-            'parent'       => empty($rows['parent']) ? 0 : intval($rows['parent'])
+            'allowPing' => !empty($rows['allowPing']) && 1 == $rows['allowPing'] ? 1 : 0,
+            'allowFeed' => !empty($rows['allowFeed']) && 1 == $rows['allowFeed'] ? 1 : 0,
+            'parent' => empty($rows['parent']) ? 0 : intval($rows['parent'])
         ];
 
         $updateStruct = [];
@@ -381,7 +381,7 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
     {
         echo false !== $more && false !== strpos($this->text, '<!--more-->') ?
             $this->excerpt
-                . "<p class=\"more\"><a href=\"{$this->permalink}\" title=\"{$this->title}\">{$more}</a></p>"
+            . "<p class=\"more\"><a href=\"{$this->permalink}\" title=\"{$this->title}\">{$more}</a></p>"
             : $this->content;
     }
 
@@ -720,8 +720,8 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
     /**
      * 对文章的简短纯文本描述
      *
-     * @deprecated
      * @return string|null
+     * @deprecated
      */
     protected function ___description(): ?string
     {
@@ -809,7 +809,9 @@ class Contents extends Base implements QueryInterface, RowFilterInterface, Prima
         $html = Contents::pluginHandle()->trigger($parsed)->filter('markdown', $text);
 
         if (!$parsed) {
-            $html = Markdown::convert($text);
+            $html = Parsedown::instance()
+                ->setBreaksEnabled(true)
+                ->text($text);
         }
 
         return $html;
